@@ -1,5 +1,6 @@
 import { User } from "../models/user.model.js"
 import { generateVerificationToken } from "../utils/index.util.js"
+import { sendVerificationEmail } from "../mailtrap/emails.js";
 
 const generateToken = async (userId) => {
   try {
@@ -44,12 +45,15 @@ export const signUp = async (req, res) => {
       verificationExpiresAt: Date.now() + 1 * 60 * 60 * 1000, // 1 hour
     }); 
 
- 
+    const token = await generateToken(user._id);
+
+    await sendVerificationEmail(user.email, verificationToken)
+
+
     const createdUser = await User.findById(user._id).select(
         "-password"
     )
 
-    const token = await generateToken(user._id);
     const options = {
       httpOnly: true,
       secure: true,
